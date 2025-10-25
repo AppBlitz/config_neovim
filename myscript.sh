@@ -1,12 +1,38 @@
 #!/bin/zsh
 
+set -e
+sudo -v
+show_details="No"
+
+# Function for install dependencies
 install_dependencies() {
-  echo "Hello world " $1
-}
-run_command() {
-  local command=$1
-}
-verification_arch() {
+  if is_arch; then
+    run_command sudo pacman -Syu --noconfirm
+    run_command sudo pacman -S --needed --noconfirm base-devel curl git nodejs npm unzip go luarocks
+    run_command sudo pacman -S --needed --noconfirm python lazygit neovim
+    run_command sudo pacman -S --needed --noconfirm rustup
+    run_command rustup default stable
+    run_command rustup component add rust-analyzer
+    run_command cargo install --locked tree-sitter-cli
+  else
+    echo "Error no search distribution"
+  fi
 }
 
-install_dependencies "karurosu"
+# Function for run commands
+run_command() {
+  if [[ "$show_details" == "No" ]]; then
+    "$@" &>/dev/null
+  else
+    "$@"
+  fi
+}
+# Function verification if system operative is arch linux
+is_arch() {
+  if [ -f /etc/arch-release ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+install_dependencies
