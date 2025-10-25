@@ -13,6 +13,7 @@ install_dependencies() {
     run_command sudo pacman -S --needed --noconfirm rustup
     run_command rustup default stable
     run_command rustup component add rust-analyzer
+    run_command export PATH="$HOME/.cargo/bin:$PATH"
     run_command cargo install --locked tree-sitter-cli
   else
     echo "Error no search distribution"
