@@ -37,7 +37,11 @@ is_arch() {
   fi
 }
 clonation_configuration() {
-  run_command git clone --depth 1 https://github.com/AppBlitz/config_neovim/tree/main/config_nvim ~/.config/nvim
+  run_command git clone --depth 1 https://github.com/AppBlitz/config_neovim /tmp/config_neovim
+  run_command mkdir -p ~/.config
+  run_command cp -r /tmp/config_neovim/config_nvim ~/.config/nvim
+  run_command rm -rf /tmp/config_neovim
 }
+
 install_dependencies
 clonation_configuration
