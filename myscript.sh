@@ -1,20 +1,17 @@
 #!/bin/zsh
 
-# ===============================================================
-# Script to setup a development environment on Arch Linux
-# Installs dependencies: Git, Node.js, Python, Go, Rust, Neovim, etc.
-# Clones and sets up Neovim configuration from GitHub.
-# Author: Your Name
-# ===============================================================
+# Exit immediately if any command fails
+set -e
 
-set -e  # Exit immediately if a command fails
-sudo -v  # Ask for sudo upfront
+# Keep sudo alive until script finishes
+sudo -v
 
-show_details="No"  # Set to "Yes" to show detailed command output
+# Toggle command output: "No" = silent, "Yes" = verbose
+show_details="No"
 
-# ===============================================================
-# Function to run commands with optional output suppression
-# ===============================================================
+# -------------------------------
+# Helper function to run commands
+# -------------------------------
 run_command() {
   if [[ "$show_details" == "No" ]]; then
     "$@" &>/dev/null
@@ -23,61 +20,63 @@ run_command() {
   fi
 }
 
-# ===============================================================
-# Function to detect if the system is Arch Linux
-# Returns 0 (success) if Arch Linux, 1 (failure) otherwise
-# ===============================================================
+# ----------------------------------------
+# Check if the operating system is Arch Linux
+# ----------------------------------------
 is_arch() {
-  if [ -f /etc/arch-release ]; then
-    return 0
-  else
-    return 1
-  fi
+  [ -f /etc/arch-release ]
 }
 
-# ===============================================================
-# Function to install dependencies for Arch Linux
-# ===============================================================
+# ----------------------------------------
+# Install system dependencies
+# ----------------------------------------
 install_dependencies() {
   if is_arch; then
-
     run_command sudo pacman -Syu --noconfirm
-
     run_command sudo pacman -S --needed --noconfirm \
-      base-devel curl git nodejs npm unzip go luarocks \
-      python lazygit neovim rustup
+      base-devel curl git nodejs npm unzip go luarocks python lazygit neovim rustup
+    # Setup Rust only if not installed
+    if ! command -v rustc &>/dev/null; then
+      run_command rustup default stable
+      run_command rustup component add rust-analyzer
+    fi
 
-   
-    export PATH="$HOME/.cargo/bin:$PATH"  # Ensure Rust tools are in PATH
-    run_command rustup default stable
-    run_command rustup component add rust-analyzer
-    run_command cargo install --locked tree-sitter-cli
+    # Update PATH for cargo binaries
+    export PATH="$HOME/.cargo/bin:$PATH"
 
-    echo "[INFO] Dependencies installation complete!"
+    # Install tree-sitter CLI only if it's missing
+    if ! command -v tree-sitter &>/dev/null; then
+      echo "🔧 Installing tree-sitter-cli..."
+      run_command cargo install --locked tree-sitter-cli
+    fi
   else
-    echo "Error: Unsupported distribution. This script only works on Arch Linux."
+    echo "Unsupported distribution. Exiting."
     exit 1
   fi
 }
 
-# ===============================================================
-# Function to clone Neovim configuration from GitHub
-# Copies only the config_nvim folder to ~/.config/nvim
-# ===============================================================
-clonation_configuration() {
-  run_command git clone --depth 1 https://github.com/AppBlitz/config_neovim /tmp/config_neovim
+# ----------------------------------------
+# Setup Neovim configuration
+# ----------------------------------------
+setup_neovim_config() {
+  local local_config="$HOME/mis-configs/config_nvim"
 
-
-  run_command mkdir -p ~/.config
-  run_command cp -r /tmp/config_neovim/config_nvim ~/.config/nvim
-
-  run_command rm -rf /tmp/config_neovim
+  # Use local configuration if available, otherwise clone from GitHub
+  if [ -d "$local_config" ]; then
+    run_command mkdir -p ~/.config
+    run_command cp -r "$local_config" ~/.config/nvim
+  else
+    run_command git clone --depth 1 https://github.com/AppBlitz/config_neovim /tmp/config_neovim
+    run_command mkdir -p ~/.config
+    run_command cp -r /tmp/config_neovim/config_nvim ~/.config/nvim
+    run_command rm -rf /tmp/config_neovim
+  fi
 }
 
-# ===============================================================
-# Main execution
-# ===============================================================
+# -------------------------------
+# Main script execution
+# -------------------------------
 install_dependencies
-clonation_configuration
+setup_neovim_config
 
-echo "[SUCCESS] Development environment setup completed!"
+echo "Installation complete! Neovim and dependencies are ready."
