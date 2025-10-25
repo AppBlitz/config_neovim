@@ -1,1 +1,4 @@
-# config_neovim
+```zsh
+zsh myscript.sh
+
+```
