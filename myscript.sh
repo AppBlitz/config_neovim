@@ -39,3 +39,4 @@ clonation_configuration() {
   run_command git clone --depth 1 https://github.com/AppBlitz/config_neovim/tree/main/config_nvim ~/.config/nvim
 }
 install_dependencies
+clonation_configuration
