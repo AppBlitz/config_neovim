@@ -13,6 +13,7 @@ return {
   { import = "astrocommunity.pack.python" },
   { import = "astrocommunity.pack.go" },
   { import = "astrocommunity.pack.angular" },
+  { import = "astrocommunity.pack.rust" },
   -- programmig-support
 
   { import = "astrocommunity.programming-language-support.kulala-nvim" },
